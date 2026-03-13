@@ -2,23 +2,17 @@ import numpy as np
 from scipy.integrate import quad
 
 
-# =====================================================
-# Q1: EXPONENTIAL DISTRIBUTION
-# =====================================================
+# ==============================
+# Q1 — EXPONENTIAL DISTRIBUTION
+# ==============================
 
 def exponential_pdf(x, lam):
     x = np.asarray(x)
     return np.where(x >= 0, lam * np.exp(-lam * x), 0.0)
 
 
-def prob_exponential(a, b, lam):
+def exponential_interval(a, b, lam):
     return np.exp(-lam * a) - np.exp(-lam * b)
-
-
-def exponential_interval_numerical(a, b, lam):
-    integrand = lambda x: lam * np.exp(-lam * x)
-    result, _ = quad(integrand, a, b)
-    return result
 
 
 def exponential_simulation(a, b, lam, N=100000):
@@ -26,9 +20,9 @@ def exponential_simulation(a, b, lam, N=100000):
     return np.mean((samples > a) & (samples < b))
 
 
-# =====================================================
-# Q2: GAUSSIAN BAYESIAN CLASSIFICATION
-# =====================================================
+# ==============================
+# Q2 — GAUSSIAN BAYESIAN MODEL
+# ==============================
 
 def gaussian_pdf(x, mu, sigma2):
     sigma = np.sqrt(sigma2)
@@ -36,9 +30,9 @@ def gaussian_pdf(x, mu, sigma2):
            np.exp(-((x - mu) ** 2) / (2 * sigma2))
 
 
-def posterior_B(x, mu_A, sigma2_A, mu_B, sigma2_B,
-                prior_A, prior_B):
-    
+def posterior(x, mu_A, sigma2_A, mu_B, sigma2_B,
+              prior_A, prior_B):
+
     f_A = gaussian_pdf(x, mu_A, sigma2_A)
     f_B = gaussian_pdf(x, mu_B, sigma2_B)
 
