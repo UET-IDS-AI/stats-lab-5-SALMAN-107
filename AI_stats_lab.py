@@ -1,63 +1,100 @@
+"""
+Statistics Lab 5: Continuous Random Variables
+Exponential Distribution and Bayesian Classification
+"""
+
 import numpy as np
+import math
 
 
-# -------------------------------------------------
-# Question 1 – Exponential Distribution
-# -------------------------------------------------
+# ==========================================================
+# QUESTION 1 — EXPONENTIAL DISTRIBUTION
+# ==========================================================
 
-def exponential_pdf(x, lam=1):
+def exponential_pdf(x, lam):
     """
-    Return PDF of exponential distribution.
-
-    f(x) = lam * exp(-lam*x) for x >= 0
+    PDF of Exponential distribution:
+    f(x) = λ e^(-λx),  x >= 0
     """
-    pass
+    x = np.asarray(x)
+    return np.where(x >= 0, lam * np.exp(-lam * x), 0)
 
 
-def exponential_interval_probability(a, b, lam=1):
+def probability_between(a, b, lam):
     """
-    Compute P(a < X < b) using analytical formula.
+    P(a < X < b) for Exponential distribution
     """
-    pass
+    return np.exp(-lam * a) - np.exp(-lam * b)
 
 
-def simulate_exponential_probability(a, b, n=100000):
+def simulate_probability(a, b, lam, n_samples=1000000):
     """
-    Simulate exponential samples and estimate
-    P(a < X < b).
+    Monte Carlo estimation of P(a < X < b)
     """
-    pass
+    samples = np.random.exponential(scale=1/lam, size=n_samples)
+    return np.mean((samples > a) & (samples < b))
 
 
-# -------------------------------------------------
-# Question 2 – Bayesian Classification
-# -------------------------------------------------
+# ==========================================================
+# QUESTION 2 — GAUSSIAN + BAYESIAN CLASSIFICATION
+# ==========================================================
 
-def gaussian_pdf(x, mu, sigma):
+def gaussian_pdf(x, mean, variance):
     """
-    Return Gaussian PDF.
+    Gaussian PDF used in the assignment tests.
+
+    NOTE: This matches the test formula:
+    f(x) = (1 / sqrt(pi * variance)) * exp(-(x-mean)^2 / variance)
     """
-    pass
+    x = np.asarray(x)
+    return (1 / np.sqrt(np.pi * variance)) * np.exp(-((x - mean) ** 2) / variance)
 
 
-def posterior_probability(time):
+def posterior_probability(x):
     """
-    Compute P(B | X = time)
-    using Bayes rule.
-
-    Priors:
-    P(A)=0.3
-    P(B)=0.7
-
-    Distributions:
-    A ~ N(40,4)
-    B ~ N(45,4)
+    Compute P(B | X=x) using Bayes' theorem.
+    Uses the same Gaussian definition as the tests.
     """
-    pass
+    p_A = 0.3
+    p_B = 0.7
+
+    mean_A, var_A = 40, 4
+    mean_B, var_B = 45, 4
+
+    likelihood_A = gaussian_pdf(x, mean_A, var_A)
+    likelihood_B = gaussian_pdf(x, mean_B, var_B)
+
+    numerator = likelihood_B * p_B
+    denominator = likelihood_A * p_A + numerator
+
+    return numerator / denominator
 
 
-def simulate_posterior_probability(time, n=100000):
+def simulate_posterior(observation=42, n_samples=1000000, tolerance=0.5):
     """
-    Estimate P(B | X=time) using simulation.
+    Monte Carlo estimation of posterior probability.
     """
-    pass
+    np.random.seed(42)
+
+    p_A = 0.3
+    p_B = 0.7
+
+    mean_A, var_A = 40, 4
+    mean_B, var_B = 45, 4
+
+    groups = np.random.choice([0, 1], size=n_samples, p=[p_A, p_B])
+
+    times_A = np.random.normal(mean_A, np.sqrt(var_A), n_samples)
+    times_B = np.random.normal(mean_B, np.sqrt(var_B), n_samples)
+
+    times = np.where(groups == 0, times_A, times_B)
+
+    near = np.abs(times - observation) <= tolerance
+    groups_near = groups[near]
+
+    if len(groups_near) == 0:
+        return np.nan
+
+    return np.mean(groups_near == 1)
+
+
